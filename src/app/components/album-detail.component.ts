@@ -3,15 +3,17 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 
 import { UserService } from '../services/user.service';
 import { AlbumService } from '../services/album.service';
+import { SongService } from '../services/song.service';
 import { GLOBAL } from '../services/global';
 import { Artist } from '../models/artist';
 import { Album } from '../models/album';
+import { Song } from '../models/song';
 
 
 @Component({
 	selector: 'album-detail',
 	templateUrl: '../views/album-detail.html',
-	providers:[UserService,AlbumService]
+	providers:[UserService,AlbumService,SongService]
 })
 
 export class AlbumDetailComponent implements OnInit{
@@ -22,13 +24,15 @@ export class AlbumDetailComponent implements OnInit{
 	public artist: Artist;
 	public alertMessage;
 	public albums: Album[];
+	public songs: Song[];
 
 
 	constructor(
 		private _route: ActivatedRoute,
 		private _router: Router,
 		private _userService: UserService,
-		private _albumService: AlbumService
+		private _albumService: AlbumService,
+		private _songService: SongService
 		){
 
 		this.identity = this._userService.getIdentity();
@@ -58,15 +62,15 @@ export class AlbumDetailComponent implements OnInit{
 					}else{
 						this.album = response.album;
 
-						//Scar los albums del artista
-						/*this._albumService.getAlbums(this.token,response.artist._id).
+						//Sacar las canciones
+						this._songService.getSongs(this.token,response.album._id).
 							subscribe(
 								response =>{
 									
-									if(!response.albums){
-										this.alertMessage = 'Este artist no tiene albums';
+									if(!response.songs){
+										this.alertMessage = 'Este album no tiene canciones';
 									}else{
-										this.albums = response.albums;
+										this.songs = response.songs;
 									}
 								},
 								error=>{
@@ -78,7 +82,7 @@ export class AlbumDetailComponent implements OnInit{
 						 			}
 								}
 
-							);*/
+							);
 						
 					}
 				},
@@ -96,5 +100,35 @@ export class AlbumDetailComponent implements OnInit{
 		
 	}
 
+	public confirmado;
+	onDeleteConfirm(id){
+		this.confirmado = id;
+	}
+
+
+	onCancelSong(){
+		this.confirmado = null;
+	}
+
+	onDeleteSong(id){
+		this._songService.deleteSong(this.token,id)
+				.subscribe(
+					response => {
+						if(!response.song){
+							alert('Error en el servidor');
+						}
+
+						this.getAlbum();
+					},
+					error=>{
+						var errorMessage = <any>error;
+			 			if(errorMessage != null){
+			 				var body = JSON.parse(error._body);
+			 				//this.alertMessage = body.message;
+			 				console.log(error);
+			 			}
+					}
+				);
+	}
 	
 }
