@@ -93,16 +93,20 @@ export class ArtistEditComponent implements OnInit{
 
 					}else{
 						this.alertMessage = 'El artista se ha actualizado correctamente!';
-						this._uploadService.makeFileRequest(this.url+'upload-image-artist/'+id,[],this.filesToUpload,this.token,'image')
-											.then(
-												(result)=>{
-													this._router.navigate(['/artistas',1]);
-												},
-												(error)=>{
-													console.log(error);
-												}
+						if(!this.filesToUpload){
+							this._router.navigate(['/artista',response.artist._id]);
+						}else{
+							this._uploadService.makeFileRequest(this.url+'upload-image-artist/'+id,[],this.filesToUpload,this.token,'image')
+												.then(
+													(result)=>{
+														this._router.navigate(['/artistas',1]);
+													},
+													(error)=>{
+														console.log(error);
+													}
 
-											);	
+												);	
+						}
 					}
 				},
 				error => {
